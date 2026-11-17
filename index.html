@@ -291,6 +291,11 @@ a.btn{text-decoration:none}
 .mini p:first-child{display:flex;align-items:center;gap:4px}
 .help .tip{z-index:60}
 @media (max-width:700px){.help.open .tip{position:fixed;left:12px;right:12px;top:72px;bottom:auto;transform:none;width:auto;inset-inline-start:auto;box-shadow:0 8px 30px rgb(0 0 0/.3);font-size:.85rem}}
+/* v7 about */
+.dev{display:flex;gap:12px;align-items:center}
+.devav{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,hsl(var(--primary)),hsl(var(--accent)));color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn.insta{background:linear-gradient(90deg,#f58529,#dd2a7b,#8134af);color:#fff;height:46px}
+@media (max-width:900px){#aboutbtn{display:none}}
 </style>
 </head>
 <body>
@@ -374,6 +379,8 @@ const P = {
   money: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
   fit: '<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>',
   login: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  insta: '<rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="currentColor"/>',
   userplus: '<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/>',
 };
 const qtip = text => `<span class="help"><button type="button" class="qbtn" aria-label="شرح">؟</button><span class="tip">${text}</span></span>`;
@@ -777,6 +784,7 @@ function render() {
     <div class="navlinks">${links}</div>
     <div class="navtools">
       <button id="syncbadge" class="sync"></button>
+      <button class="iconbtn" id="aboutbtn" title="عن البرنامج والمطوّر">${I('info')}</button>
       <button class="iconbtn danger" id="logout" title="تسجيل الخروج">${I('logout')}</button>
     </div>
   </div></nav>
@@ -784,18 +792,21 @@ function render() {
   <nav class="bottomnav">${mlinks}</nav>`;
   $('#logout').onclick = signOut;
   $('#syncbadge').onclick = openSyncPanel;
+  $('#aboutbtn').onclick = openAbout;
   $('#morebtn').onclick = e => {
     e.preventDefault();
     const ov = document.createElement('div'); ov.className = 'overlay sheet';
     ov.innerHTML = `<div class="modal"><div class="mh between"><h3 class="bold">المزيد</h3><button class="iconbtn" data-x>${I('x')}</button></div><div class="mb grid" style="gap:6px">
       ${moreItems.map(i => `<a class="sheetlink ${i.path === page ? 'active' : ''}" href="#${i.path}">${I(i.icon)}<span>${i.label}</span>${pcb(i.path)}</a>`).join('')}
       <button class="sheetlink" data-sync>${I('cloud')}<span>حالة المزامنة</span></button>
+      <button class="sheetlink" data-about>${I('info')}<span>عن البرنامج والمطوّر</span></button>
       <button class="sheetlink" data-out style="color:hsl(var(--destructive))">${I('logout')}<span>تسجيل الخروج</span></button></div></div>`;
     document.body.appendChild(ov);
     const close = () => ov.remove();
     ov.addEventListener('mousedown', ev => { if (ev.target === ov) close(); });
     $('[data-x]', ov).onclick = close; $$('a', ov).forEach(a => a.addEventListener('click', close));
     $('[data-sync]', ov).onclick = () => { close(); openSyncPanel(); };
+    $('[data-about]', ov).onclick = () => { close(); openAbout(); };
     $('[data-out]', ov).onclick = () => { close(); signOut(); };
   };
   updateSyncBadge();
@@ -826,11 +837,14 @@ function loginView() {
         <button class="btn block" id="lbtn" type="submit">${up ? 'إنشاء حساب' : 'دخول'} ${I(up ? 'userplus' : 'login')}</button>
       </form>
       <div style="text-align:center;margin-top:14px;display:grid;gap:6px"><button id="lsw" class="small accentc" style="text-decoration:underline">${up ? 'لديك حساب؟ سجل دخول' : 'ليس لديك حساب؟ أنشئ واحداً'}</button>${up ? '' : '<button id="lfg" class="xs muted" style="text-decoration:underline">نسيت كلمة المرور؟</button>'}</div>
+    </div>
+    <div style="text-align:center;margin-top:16px"><button id="labout" class="small row" style="margin:0 auto;color:hsl(var(--primary));font-weight:600">${I('info')} عن البرنامج والمطوّر</button>
       ${!navigator.onLine ? `<div class="alert warn" style="margin-top:14px">${I('cloudoff')}<span>أنت غير متصل. تسجيل الدخول أول مرة على هذا الجهاز يحتاج إنترنت، وبعدها يعمل الموقع بدون نت.</span></div>` : ''}
     </div></div></div>`;
 }
 function bindLogin() {
   $('#lsw').onclick = () => { loginMode = loginMode === 'up' ? 'in' : 'up'; render(); };
+  $('#labout').onclick = openAbout;
   if ($('#lfg')) $('#lfg').onclick = () => { $('#lmsg').innerHTML = `<div class="alert info">${I('shield')}<span>تواصل مع المدرّب ليعيّن لك كلمة مرور مؤقتة، ثم سجّل الدخول بها وغيّرها من صفحة «الملف الشخصي».</span></div>`; };
   const msg = (t, ok) => { $('#lmsg').innerHTML = t ? `<div class="alert ${ok ? 'info' : 'danger'}">${esc(t)}</div>` : ''; };
   $('#lf').onsubmit = async e => {
@@ -869,6 +883,27 @@ async function afterLogin(u, isNew) {
   if (isNew && !D.profile.name) { try { D.profile.name = (u.user_metadata && u.user_metadata.name) || ''; } catch (e) {} }
   render();
   sync();
+}
+
+/* ---------- about ---------- */
+const INSTA = 'https://www.instagram.com/motion_512';
+function openAbout() {
+  const ov = document.createElement('div'); ov.className = 'overlay';
+  ov.innerHTML = `<div class="modal about" style="max-width:480px"><div class="mh between"><h3 class="bold">عن البرنامج والمطوّر</h3><button class="iconbtn" data-x aria-label="إغلاق">${I('x')}</button></div><div class="mb">
+    <div style="text-align:center;margin-bottom:14px"><div class="logo-box" style="width:72px;height:72px;margin-bottom:8px"><img src="${LOGO}" alt="512" style="width:52px;height:52px"></div>
+      <h2 class="display primaryc" style="font-size:1.4rem;font-weight:800;line-height:1.2">motion 512</h2><span class="chip">life compass · بوصلة الحياة</span></div>
+    <p class="small" style="line-height:1.9;margin-bottom:10px">أداة تساعدك على التخطيط لحياتك المالية بواقعية: تعرف مصاريفك الحالية والمستهدفة، وتحسب السعر الذي يجب أن تطلبه في ساعة العمل الحر بعد احتساب وقتك الثابت والوقت غير المدفوع والعمولات، ثم تبني خطة وتتابع إنجازك شهراً بشهر. وتعمل حتى بدون إنترنت.</p>
+    <div class="sep"></div>
+    <div class="dev">
+      <div class="devav">${I('user', 'xl')}</div>
+      <div><p class="xs muted">تصميم وتطوير</p><h3 class="bold" style="font-size:1.1rem">أ. محمد مفيد</h3><p class="small muted">مدرّب تصميم جرافيك وخبير وسائط متعددة</p></div></div>
+    <p class="small" style="line-height:1.9;margin:10px 0">أعمل في تدريب الشباب على التصميم والموشن جرافيك وصناعة المحتوى والعمل الحر، وصمّمت هذه الأداة لتساعد المتدربين على تحويل مهاراتهم إلى دخل حقيقي بخطة واضحة وأرقام واقعية.</p>
+    <a class="btn block insta" href="${INSTA}" target="_blank" rel="noopener">${I('insta')} تواصل معي على إنستغرام <span class="ltr" style="opacity:.85">@motion_512</span></a>
+    <p class="xs muted" style="text-align:center;margin-top:8px">للاستفسارات والملاحظات واقتراحات التطوير</p>
+  </div></div>`;
+  document.body.appendChild(ov);
+  const close = () => ov.remove();
+  $('[data-x]', ov).onclick = close; ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
 }
 
 /* ---------- pending approval ---------- */
